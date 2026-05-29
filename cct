@@ -157,7 +157,9 @@ tui_input() {
     printf '\e[2J\e[H' >&3
     printf '%s  %s%s\n' "$BLUE$BOLD" "$title" "$RESET" >&3
     [[ -n "$subtitle" ]] && printf '%s  %s%s\n' "$DIM" "$subtitle" "$RESET" >&3
-    printf '\n  %s❯%s %s%s \e[7m \e[0m\n' "$CYAN" "$RESET" "$BOLD" "$buf" >&3
+    # A reverse-video block marks the caret, flush against the text — same idiom
+    # draw() uses for the selected row, with the real cursor hidden app-wide.
+    printf '\n  %s❯%s %s%s\e[7m \e[0m\n' "$CYAN" "$RESET" "$BOLD" "$buf" >&3
     printf '%s' "$RESET" >&3
     printf '\n%s  type to edit · ⏎ accept · ⌫ delete · ^U clear · esc cancel%s' "$DIM" "$RESET" >&3
     read_key
