@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cct — Cyrus' tmux TUI: a small full-screen TUI to launch a coding agent
+# ctt — Cyrus' tmux TUI: a small full-screen TUI to launch a coding agent
 # (claude/codex/pi/opencode) in a named tmux session, or attach to / delete
 # sessions.
 #
@@ -7,8 +7,8 @@
 set -euo pipefail
 
 VERSION="0.1.0"
-# Canonical location of the script, used by `cct --update`.
-SELF_URL="https://raw.githubusercontent.com/ckrowbar/cct/main/cct"
+# Canonical location of the script, used by `ctt --update`.
+SELF_URL="https://raw.githubusercontent.com/ckrowbar/ctt/main/ctt"
 
 # ---------------------------------------------------------------------------
 # Colors — only when stderr is a TTY (so piping/redirecting stays clean).
@@ -22,7 +22,7 @@ else
   RED=''; GREEN=''; YELLOW=''; BLUE=''; CYAN=''
 fi
 
-die() { printf '%scct:%s %s\n' "$RED$BOLD" "$RESET" "$1" >&2; exit 1; }
+die() { printf '%sctt:%s %s\n' "$RED$BOLD" "$RESET" "$1" >&2; exit 1; }
 
 command -v tmux >/dev/null || die "tmux not installed"
 
@@ -47,7 +47,7 @@ TTY=/dev/tty
 STTY_SAVED=""
 
 tui_init() {
-  exec 3<>"$TTY" || die "no controlling terminal (cct needs an interactive TTY)"
+  exec 3<>"$TTY" || die "no controlling terminal (ctt needs an interactive TTY)"
   STTY_SAVED="$(stty -g <&3)"
   stty -echo -icanon <&3
   printf '\e[?25l\e[2J' >&3            # hide cursor, clear
@@ -249,7 +249,7 @@ pick_dir() {
       sub+="    🔎 ${filter}"
       (( ${#names[@]} == pinned )) && sub+="  (no matches)"
     fi
-    draw "cct ❯ pick a directory" "$sub" \
+    draw "ctt ❯ pick a directory" "$sub" \
          "↑/↓ move · →/⏎ open · ← parent · type to filter · ⌫ del · esc clear/cancel" "$sel"
 
     read_key
@@ -285,7 +285,7 @@ screen_new() {
   local -a cmd
 
   # Provider
-  tui_select "cct ❯ new session" "Pick a provider" "claude" "codex" "pi" "opencode" || return 1
+  tui_select "ctt ❯ new session" "Pick a provider" "claude" "codex" "pi" "opencode" || return 1
   case "$SELECT_IDX" in
     0) provider=claude ;;
     1) provider=codex ;;
@@ -309,7 +309,7 @@ screen_new() {
   folder="${folder//[^A-Za-z0-9_-]/-}"
   local default_name; default_name="${provider}-${folder}-$(date +%m%d-%H%M)"
   while true; do
-    tui_input "cct ❯ new session" "Session name" "$default_name" || return 1
+    tui_input "ctt ❯ new session" "Session name" "$default_name" || return 1
     session="${INPUT_VALUE:-$default_name}"
     [[ "$session" =~ ^[A-Za-z0-9_-]+$ ]] && break
     tui_select "Invalid name: $session" "Allowed: letters, digits, _ -" "Try again" || return 1
@@ -384,7 +384,7 @@ screen_main() {
 
     local sub="${#snames[@]} session(s)"
     (( ${#snames[@]} == 0 )) && sub="no sessions yet — create one"
-    draw "cct ❯ coding-agent sessions" "$sub" \
+    draw "ctt ❯ coding-agent sessions" "$sub" \
          "↑/↓ move · ⏎ open · n new · d delete · r refresh · q quit" "$sel"
 
     read_key
@@ -419,34 +419,34 @@ screen_main() {
 # ---------------------------------------------------------------------------
 usage() {
   cat <<EOF
-cct $VERSION — Cyrus' tmux TUI
+ctt $VERSION — Cyrus' tmux TUI
 
 Usage:
-  cct              launch the interactive TUI
-  cct -u|--update  update cct in place to the latest version
-  cct -v|--version print version
-  cct -h|--help    show this help
+  ctt              launch the interactive TUI
+  ctt -u|--update  update ctt in place to the latest version
+  ctt -v|--version print version
+  ctt -h|--help    show this help
 EOF
 }
 
 # Replace the installed script with the latest version from SELF_URL. For a git
 # checkout it just points you at `git pull` (overwriting would dirty the tree).
-cct_update() {
+ctt_update() {
   command -v curl >/dev/null || die "curl is required to update"
   local target dir tmp
   target="$(realpath "${BASH_SOURCE[0]}")"
   dir="$(dirname "$target")"
   if git -C "$dir" rev-parse --is-inside-work-tree >/dev/null 2>&1 \
      && git -C "$dir" ls-files --error-unmatch "$target" >/dev/null 2>&1; then
-    printf 'cct is a git checkout — update with:\n  git -C %s pull\n' "$dir"
+    printf 'ctt is a git checkout — update with:\n  git -C %s pull\n' "$dir"
     return 0
   fi
-  [[ -w "$target" ]] || die "no write permission for $target (try: sudo cct --update)"
+  [[ -w "$target" ]] || die "no write permission for $target (try: sudo ctt --update)"
   tmp="$(mktemp)"
   # shellcheck disable=SC2064
   trap "rm -f '$tmp'" RETURN
   curl -fsSL "$SELF_URL" -o "$tmp"          || die "download failed"
-  head -n1 "$tmp" | grep -q '^#!/usr/bin/env bash' || die "downloaded file is not cct"
+  head -n1 "$tmp" | grep -q '^#!/usr/bin/env bash' || die "downloaded file is not ctt"
   bash -n "$tmp"                            || die "downloaded script failed its syntax check; not installing"
   local newver
   newver="$(sed -n 's/^VERSION="\(.*\)"/\1/p' "$tmp" | head -n1)"
@@ -457,10 +457,10 @@ cct_update() {
 
 case "${1:-}" in
   -h|--help)        usage; exit 0 ;;
-  -v|--version)     printf 'cct %s\n' "$VERSION"; exit 0 ;;
-  -u|--update|update) cct_update; exit $? ;;
+  -v|--version)     printf 'ctt %s\n' "$VERSION"; exit 0 ;;
+  -u|--update|update) ctt_update; exit $? ;;
   "")               : ;;
-  *)                die "unknown argument: $1 (try: cct --help)" ;;
+  *)                die "unknown argument: $1 (try: ctt --help)" ;;
 esac
 
 tui_init

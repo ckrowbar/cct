@@ -1,4 +1,4 @@
-# cct — Cyrus' tmux TUI
+# ctt — Cyrus' tmux TUI
 
 A small, dependency-light terminal UI for running coding agents
 ([Claude Code](https://github.com/anthropics/claude-code) / Codex) inside named
@@ -9,7 +9,7 @@ arrow-driven screen.
 It's a single Bash script. No runtime beyond tmux and a coding-agent CLI.
 
 ```
-  cct ❯ coding-agent sessions
+  ctt ❯ coding-agent sessions
   2 session(s)
 
    ＋  New session
@@ -47,42 +47,42 @@ It's a single Bash script. No runtime beyond tmux and a coding-agent CLI.
 ## Install
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/ckrowbar/cct/main/cct \
-  -o ~/.local/bin/cct && chmod +x ~/.local/bin/cct
+curl -fsSL https://raw.githubusercontent.com/ckrowbar/ctt/main/ctt \
+  -o ~/.local/bin/ctt && chmod +x ~/.local/bin/ctt
 ```
 
 Or clone and symlink:
 
 ```sh
-git clone https://github.com/ckrowbar/cct.git
-ln -s "$PWD/cct/cct" ~/.local/bin/cct   # ensure ~/.local/bin is on $PATH
+git clone https://github.com/ckrowbar/ctt.git
+ln -s "$PWD/ctt/ctt" ~/.local/bin/ctt   # ensure ~/.local/bin is on $PATH
 ```
 
 Then just run:
 
 ```sh
-cct
+ctt
 ```
 
 ## Updating
 
 ```sh
-cct --update
+ctt --update
 ```
 
 This replaces the installed script in place with the latest version from
-`main`, after validating the download. It works wherever `cct` lives on your
+`main`, after validating the download. It works wherever `ctt` lives on your
 `PATH` (no need to remember the install path), and it preserves a symlinked
 install by writing through the link.
 
-If you installed via `git clone`, `cct --update` detects the checkout and points
+If you installed via `git clone`, `ctt --update` detects the checkout and points
 you at the right command instead:
 
 ```sh
-git -C /path/to/cct pull
+git -C /path/to/ctt pull
 ```
 
-Updating a system-wide install may need elevated permissions: `sudo cct --update`.
+Updating a system-wide install may need elevated permissions: `sudo ctt --update`.
 
 ## Keybindings
 
@@ -97,7 +97,7 @@ Updating a system-wide install may need elevated permissions: `sudo cct --update
 
 ## How it works
 
-`cct` launches agents detached and then attaches:
+`ctt` launches agents detached and then attaches:
 
 ```sh
 tmux new-session -d -s "$name" -c "$workdir" claude --permission-mode auto
@@ -108,7 +108,7 @@ Sessions also get `set-titles` enabled so the session name is published via the
 terminal title (handy for IDE terminal sidebars). Agents run in "auto" mode —
 in-workspace edits are auto-approved, riskier actions still prompt.
 
-The whole thing is one file (`cct`) with a few shared TUI primitives
+The whole thing is one file (`ctt`) with a few shared TUI primitives
 (`read_key`, `draw`, `tui_select`, `tui_input`, `tui_confirm`) on top of a
 single raw-mode session bound to `/dev/tty`.
 
