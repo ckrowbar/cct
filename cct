@@ -254,8 +254,17 @@ screen_new() {
   esac
   command -v "$provider" >/dev/null || { tui_select "$provider not found in PATH" "" "OK"; return 1; }
 
-  # Session name (editable, with validation)
-  local default_name="${provider}-$(date +%H%M)"
+  # Working directory (chosen first so its folder name can seed the default).
+  pick_dir "$PWD" || return 1
+  workdir="$picked_dir"
+
+  # Session name (editable, with validation). Default: model-folder-MMDD-HHMM
+  # (e.g. claude-web-ui-0529-1430). The folder name is sanitized to the allowed
+  # charset; "/" becomes "root".
+  local folder="${workdir##*/}"
+  [[ -z "$folder" ]] && folder=root
+  folder="${folder//[^A-Za-z0-9._-]/-}"
+  local default_name; default_name="${provider}-${folder}-$(date +%m%d-%H%M)"
   while true; do
     tui_input "cct ❯ new session" "Session name" "$default_name" || return 1
     session="${INPUT_VALUE:-$default_name}"
@@ -273,10 +282,6 @@ screen_new() {
       2) return 1 ;;
     esac
   fi
-
-  # Working directory
-  pick_dir "$PWD" || return 1
-  workdir="$picked_dir"
 
   # Agent command (auto mode — auto-approve in-workspace edits, prompt for risk)
   case "$provider" in

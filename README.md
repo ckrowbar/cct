@@ -25,8 +25,9 @@ It's a single Bash script. No runtime beyond tmux and a coding-agent CLI.
   keys (or `k`/`j`) everywhere; `→`/`Enter` to act, `←`/`Esc` to go back.
 - **Session list** — shows each session's last activity (`2m ago`, `attached`)
   and working directory, plus a pinned *New session* row.
-- **Guided new-session flow** — pick a provider, name the session (editable,
-  with a sensible `provider-HHMM` default), then choose a working directory.
+- **Guided new-session flow** — pick a provider, choose a working directory,
+  then name the session. The default name is built from the model, the folder,
+  and the date/time (e.g. `claude-web-ui-0529-1430`) and is fully editable.
 - **Directory picker** — browse the filesystem with arrows; symlinked
   directories are enterable and marked with `→`.
 - **Conflict & delete handling** — attach / kill+recreate when a name exists;
