@@ -181,13 +181,24 @@ tui_input() {
 # Returns non-zero on cancel.
 # ---------------------------------------------------------------------------
 list_entries() {  # emit "<type><TAB>name" sorted: dir-likes first, then the rest.
-  # -xtype d matches real dirs AND symlinks that resolve to a directory; %y is
-  # the entry's own type ('d' real dir, 'l' symlink) so the picker can mark and
-  # still enter symlinked directories. Everything else is reported as 'f'.
-  (cd "$1" 2>/dev/null && {
-     find . -maxdepth 1 -mindepth 1 -xtype d  ! -name '.*' -printf '%y\t%f\n' 2>/dev/null | LC_ALL=C sort -t$'\t' -k2
-     find . -maxdepth 1 -mindepth 1 ! -xtype d ! -name '.*' -printf 'f\t%f\n'  2>/dev/null | LC_ALL=C sort -t$'\t' -k2
-   }) || true
+  # Pure-bash globbing (no GNU `find` extensions like -printf/-xtype, which BSD
+  # find on macOS lacks). The `*/` glob matches real dirs AND symlinks that
+  # resolve to a directory; `-L` then marks a symlink ('l') vs a real dir ('d')
+  # so the picker can flag and still enter symlinked directories. A trailing
+  # group lists everything that isn't a directory as 'f'. Hidden entries (dot
+  # names) are skipped; dotglob stays off so `*`/`*/` already exclude them.
+  (cd "$1" 2>/dev/null || exit 0
+   shopt -s nullglob
+   local e
+   for e in */; do
+     e="${e%/}"
+     if [[ -L "$e" ]]; then printf 'l\t%s\n' "$e"; else printf 'd\t%s\n' "$e"; fi
+   done | LC_ALL=C sort -t$'\t' -k2
+   for e in *; do
+     [[ -d "$e" ]] && continue   # already emitted above (real dir or symlinked dir)
+     printf 'f\t%s\n' "$e"
+   done | LC_ALL=C sort -t$'\t' -k2
+  ) || true
 }
 
 picked_dir=""
